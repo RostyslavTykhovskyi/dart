@@ -30,15 +30,25 @@ class MyStatefulWidget extends StatefulWidget {
   State<MyStatefulWidget> createState() => _MyStatefulWidgetState();
 }
 
-class _MyStatefulWidgetState extends State<MyStatefulWidget> {
-  int _selectedIndex = 0;
-  static ScrollController controller = ScrollController();
-  List<Widget> _widgetOptions = <Widget>[];
+class _MyStatefulWidgetState extends State<MyStatefulWidget>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  late int _selectedIndex;
+  late ScrollController _scrollController;
+  late List<Widget> _tabs;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = 0;
+    _scrollController = ScrollController();
+    _tabController = TabController(vsync: this, length: 2);
+  }
 
   void generateWidgetOptions(context) {
-    _widgetOptions = <Widget>[
+    _tabs = <Widget>[
       ListView(
-        controller: controller,
+        controller: _scrollController,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -134,6 +144,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _tabController.animateTo(_selectedIndex);
     });
   }
 
@@ -184,7 +195,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   Center _buildBody() {
     return Center(
-      child: _widgetOptions.elementAt(_selectedIndex),
+      child: TabBarView(
+        physics: const NeverScrollableScrollPhysics(),
+        controller: _tabController,
+        children: _tabs,
+      ),
     );
   }
 
@@ -411,12 +426,18 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       backgroundColor: Colors.blue[200],
     );
   }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 }
 
-class MeetRoute extends StatelessWidget {
+class Email extends StatelessWidget {
   final int number;
 
-  const MeetRoute({Key? key, this.number = 0}) : super(key: key);
+  const Email({Key? key, this.number = 0}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -688,7 +709,7 @@ Widget getMailWidgets(size, context) {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MeetRoute(number: i)),
+            MaterialPageRoute(builder: (context) => Email(number: i)),
           );
         },
         child: Hero(
